@@ -29,11 +29,9 @@ if __name__=="__main__":
     from sklearn.neighbors import KernelDensity as skKernelDensity
     from time import time
     
-    N, d = (1000000, 3)
+    N, d = (10000, 3)
     h = 0.2
     X = np.random.multivariate_normal(np.array([0.1,0.2,0.3]), 0.8*np.identity(d) ,N)
-    
-    """
     
     start = time()
     test1 = KernelDensity(X=X, bw=h*np.ones(d)).score(x=X, method='cpu', n_jobs=-1, log=True)
@@ -49,7 +47,6 @@ if __name__=="__main__":
     test3 = skKernelDensity(bandwidth=h, kernel="gaussian").fit(X).score_samples(X)
     print(time()-start)
     print(test3[0:10])
-    """
     
     from includes.rodeo_python import local_rodeo
     x = np.array([0.1,0.2,0.3])
