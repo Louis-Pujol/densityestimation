@@ -39,7 +39,7 @@ class Regular_Histogram():
         
         if isinstance(self.structure[0], int):
             self.h, _ = np.histogramdd(X, bins=self.n_bins)
-            self.log_likelihood = compute_log_likelihood(h)
+            self.log_likelihood = compute_log_likelihood(self.h)
         else:
             self.h = []
             self.log_likelihood = 0
@@ -59,15 +59,15 @@ class Regular_Histogram():
 
         #Compute h_test
         if isinstance(self.structure[0], int):
-            h_test, _ = np.histogramdd(X, bins=self.n_bins)
+            h_test, _ = np.histogramdd(X_test, bins=self.n_bins)
         else:
                 h_test = []
                 for j in self.structure:
-                    loc_h, _ = np.histogramdd(X[:, j], bins=self.n_bins)
+                    loc_h, _ = np.histogramdd(X_test[:, j], bins=self.n_bins)
                     h_test.append(loc_h)
 
-                    
-        # A corriger
+
+
         if isinstance(self.structure[0], int):
             ll_test = self.d * np.log(self.n_bins) - np.log(self.n)
             
@@ -79,7 +79,7 @@ class Regular_Histogram():
             ll_test = 0
             for j in range(len(self.structure)):
                 d_loc = len(self.structure[j])
-                ll_test += d_loc * np.log(bins) - np.log(self.n)
+                ll_test += d_loc * np.log(self.n_bins) - np.log(self.n)
 
                 for i in cartesian(d_loc * (np.array(range(self.n_bins)),)):
                     ll_test += h_test[j][tuple(i)] * np.log(self.h[j][tuple(i)] + 1 ) / n_test
