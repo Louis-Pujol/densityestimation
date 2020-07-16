@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 
 #Class Regular_histogram
@@ -11,6 +12,7 @@ class Regular_Histogram():
     methods : - fit : compute histogram and empirical log-likelihood
               - test_log_likelihood : compute log_likelihood on another set (must be call after fit), drawback : +1 in each bin to avoid log(0)...
     
+    /!\ all data will be normalized to fill [0, 1]^d
     TODO : add quadratic_loss, possibility set different n_bins to different set of structure
     '''
     
@@ -31,6 +33,7 @@ class Regular_Histogram():
         '''compute histogram and empirical log-likelihood
         '''
         
+        X = MinMaxScaler().fit_transform(X) # Renormalization of X
         n, dim = X.shape
         self.n = n
         if dim != self.d:
@@ -48,10 +51,11 @@ class Regular_Histogram():
                 self.h.append(loc_h)
                 self.log_likelihood += compute_log_likelihood(loc_h)
             
-    def test_log_likelihood(self, X_test):
+    def test_log_likelihood(self, X_test, opt=1, lambd=1):
         ''' Compute test error on X_test
             /!\ 1 is added to every histogram bins to avoid log(0) ...
         '''
+        X_test = MinMaxScaler().fit_transform(X_test) # Renormalization of X_test
         n_test, dim = X_test.shape
         if dim != self.d:
             print("error, data must be " + str(self.d) + "-dimensional")
@@ -66,26 +70,50 @@ class Regular_Histogram():
                     loc_h, _ = np.histogramdd(X_test[:, j], bins=self.n_bins)
                     h_test.append(loc_h)
 
-
+        ll_test = 0
 
         if isinstance(self.structure[0], int):
-            ll_test = self.d * np.log(self.n_bins) - np.log(self.n)
             
-            for i in cartesian(self.d * (np.array(range(self.n_bins)),)):
-                    ll_test += h_test[tuple(i)] * np.log(self.h[tuple(i)] + 1 ) / n_test
+            if opt == 1:
+                for i in cartesian(self.d * (np.array(range(self.n_bins)),)):
+                    ll_test += h_test[tuple(i)] * np.log( (self.h[tuple(i)] + lambd) * (self.n_bins ** self.d) / self.n) / n_test
+            elif opt == 2:
+                for i in cartesian(self.d * (np.array(range(self.n_bins)),)):
+                    if h_test[tuple(i)] != 0 and self.h[tuple(i)] != 0:
+                        ll_test += h_test[tuple(i)] * np.log(self.h[tuple(i)] * (self.n_bins ** self.d) / self.n) / n_test
+                    elif h_test[tuple(i)] != 0 and self.h[tuple(i)] == 0: #Theoritically infty
+                                
+                        ll_test -= lambd * h_test[tuple(i)]
 
-
-        else:
-            ll_test = 0
+        else:            
             for j in range(len(self.structure)):
                 d_loc = len(self.structure[j])
-                ll_test += d_loc * np.log(self.n_bins) - np.log(self.n)
+                if opt == 1:
+                    for i in cartesian(d_loc * (np.array(range(self.n_bins)),)):
+                        ll_test += h_test[j][tuple(i)] * np.log( (self.h[j][tuple(i)] + lambd) * (self.n_bins ** d_loc) / self.n ) / n_test
+                
+                if opt == 2:
+                    for i in cartesian(d_loc * (np.array(range(self.n_bins)),)):
+                        if h_test[j][tuple(i)] != 0 and self.h[j][tuple(i)] != 0:
+                            ll_test += h_test[j][tuple(i)] * np.log(self.h[j][tuple(i)] * (self.n_bins ** d_loc) / self.n ) / n_test
+                        elif h_test[j][tuple(i)] != 0 and self.h[j][tuple(i)] == 0: #Theoritically infty
+                            
+                            ll_test -= lambd * h_test[j][tuple(i)]
+                        
 
-                for i in cartesian(d_loc * (np.array(range(self.n_bins)),)):
-                    ll_test += h_test[j][tuple(i)] * np.log(self.h[j][tuple(i)] + 1 ) / n_test
-
-        return ll_test 
+        return ll_test
     
+    
+    def complete_histogram(self):
+        '''For computation with L2 norm it is useful to have access to the full histogram
+           and not only piecewise on each set of the variables partition
+        
+        '''
+        
+        full_h = np.zeros( self.d * (self.n_bins, ) )
+        print(full_h.shape)
+        
+        
     
             
 #Ancilliaries function
