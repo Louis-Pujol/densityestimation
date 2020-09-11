@@ -53,7 +53,7 @@ class Regular_Histogram():
             
     def test_log_likelihood(self, X_test, opt=1, lambd=1):
         ''' Compute test error on X_test
-            /!\ 1 is added to every histogram bins to avoid log(0) ...
+            see overleaf to option to avoid +infty
         '''
         X_test = MinMaxScaler().fit_transform(X_test) # Renormalization of X_test
         n_test, dim = X_test.shape
@@ -107,7 +107,7 @@ class Regular_Histogram():
     def complete_histogram(self):
         '''For computation with L2 norm it is useful to have access to the full histogram
            and not only piecewise on each set of the variables partition
-        
+           #TODO: tbw
         '''
         
         full_h = np.zeros( self.d * (self.n_bins, ) )
@@ -118,6 +118,8 @@ class Regular_Histogram():
             
 #Ancilliaries function
 def cartesian(arrays):
+    
+    ''' return a list of all combinaison between vectors of arrays'''
     arrays = [np.asarray(a) for a in arrays]
     shape = (len(x) for x in arrays)
 
