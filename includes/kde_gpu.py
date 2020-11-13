@@ -7,8 +7,8 @@ import time
 def eval_gpu(x, X, h):
     
     N, d = X.shape
-    x_i = LazyTensor_np(x[:, None, :])  # (M, 1, 2) KeOps LazyTensor, wrapped around the numpy array x
-    X_j = LazyTensor_np(X[None, :, :])  # (1, N, 2) KeOps LazyTensor, wrapped around the numpy array y
+    x_i = LazyTensor_np(x[:, None, :])  # (M, 1, d) KeOps LazyTensor, wrapped around the numpy array x
+    X_j = LazyTensor_np(X[None, :, :])  # (1, N, d) KeOps LazyTensor, wrapped around the numpy array y
     h_l = LazyTensor_np(h)
 
     D_ij = ( -0.5 * (((x_i - X_j) / h_l) ** 2).sum(-1))  # **Symbolic** (M, N) matrix of squared distances
@@ -17,6 +17,8 @@ def eval_gpu(x, X, h):
     out = s_i / (N*np.prod(h)*np.power(2*np.pi, d/2))
     
     return out
+        
+    
 
 def eval_gpu_matrix(x, X, h):
     

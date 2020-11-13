@@ -11,7 +11,6 @@ class KernelDensity:
         
         self.X = X
         self.N, self.d = X.shape
-            
         self.bw = bw
         
     def score(self, x, method='cpu', n_jobs=1, log=False):
@@ -30,6 +29,38 @@ class Graphical_KDE:
     
     def __init__(self, h):
         self.a = 1
+        
+
+def complete_graph_weigths_mc(X_train, X_test, h, gpu=False, n_jobs=1):
+    
+    _, d = X_train.shape
+    
+    if gpu:
+        method = "gpu"
+    else:
+        method = "cpu"
+
+    partition = [ [i] for i in range(d) ]
+    partition += [ [j, i] for i in range(d) for j in range(i)  ]
+    
+
+    pn1 = {}
+        
+    for p in partition:
+        #print(p)
+        loc_d = len(p)
+        
+        pn1[str(p)] = KernelDensity(X=X_train[:, p], bw=h*np.ones(loc_d)).score(x=X_test[:, p], method=method, n_jobs=n_jobs, log=True)
+            
+    
+    weights = {} # \hat{I}
+    for a in [ [j, i] for i in range(d) for j in range(i)  ]:
+        
+        #print(str(a))
+        weights[str(a)] = np.mean( pn1[str(a)] - pn1[str([a[0]])] - pn1[str([a[1]])] )
+            
+        
+    return weights
         
 
 
