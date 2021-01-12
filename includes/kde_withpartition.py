@@ -100,7 +100,7 @@ def model_selection_on_partitions(X, hs, n_train, n_test, max_size=None):
         best_partitions[j]['score'] = partitions_dict[str(best)]['score']
         best_partitions[j]['hs'] = partitions_dict[str(best)]['hs']
     
-    return best_partitions, partitions_dict
+    return best_partitions, partitions_dict, scores
 
 def correction_bandwidth(X, partition, Ns, n_test, hs, M=5, savefigure=False, path = ""):
     
@@ -178,7 +178,7 @@ def compute_density_with_partition(X, partition, correction=None, hs=None, log=T
     else:
         print("you must specify correction or hs")
         
-def show_correction_improvement(X, partition, Ns, n_test, correction, hs, M=5):
+def show_correction_improvement(X, partition, Ns, n_test, correction, hs, M=5, savefigure=False, path=""):
     
     scores_corrected = []
     scores_notcorrected = []
@@ -213,4 +213,8 @@ def show_correction_improvement(X, partition, Ns, n_test, correction, hs, M=5):
     plt.legend()
     plt.xlabel("n_train")
     plt.ylabel("score")
-    plt.show()
+    if savefigure == True:
+        plt.savefig(path+"correction_gain.png")
+        plt.clf()
+    else:
+        plt.show()
